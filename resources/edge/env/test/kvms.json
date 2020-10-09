@@ -1,0 +1,44 @@
+[
+    {
+        "name": "set-logging-values-v1",
+        "encrypted": false,
+        "entry": [
+            {
+                "name": "logging_log",
+                "value": "true"
+            },
+            {
+                "name": "logging_level",
+                "value": "INFO"
+            },
+            {
+                "name": "logging_mask_character",
+                "value": "x"
+            },
+            {
+                "name": "logging_host",
+                "value": "kurtkanaskietrainer-trial-test.apigee.net"
+            },
+            {
+                "name": "logging_path",
+                "value": "logging-mock"
+            },
+            {
+                "name": "pingstatus-v1",
+                "value": "true,DEBUG,https://kurtkanaskietrainer-trial-test.apigee.net/logging-mock"
+            }
+            {
+                "name": "logging_url",
+                "value": "https://kurtkanaskietrainer-trial-test.apigee.net/logging-mock"
+            },
+            {
+                "name": "features-v1",
+                "value": "true,DEBUG,https://kurtkanaskietrainer-trial-test.apigee.net/logging-mock"
+            },
+            {
+                "name": "pingstatus-v1-sharedflows",
+                "value": "true,DEBUG,https://kurtkanaskietrainer-trial-test.apigee.net/logging-mock"
+            }
+        ]
+    }
+]

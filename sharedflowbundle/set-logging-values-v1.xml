@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<SharedFlowBundle revision="10" name="set-logging-values-v1">
+    <ConfigurationVersion majorVersion="4" minorVersion="0"/>
+    <CreatedAt>1602106393182</CreatedAt>
+    <CreatedBy>defaultUser</CreatedBy>
+    <Description>Now with masking per proxy. Can be used as FCs at each Flow Hook location, in Target and Proxy DefaultFaultRule. Used by LogViaJavascript, LogViaSyslog, LogViaServiceCallout or LogViaStacdriver(s) Shared Flows. Expects "currentstep.flowstate" set by calling FC in Flow Hook Shared Flows (e.g. pre-proxy). Protects against non-json responses from targets. DESCRIPTION</Description>
+    <DisplayName>set-logging-values-v1</DisplayName>
+    <LastModifiedAt>1602106393182</LastModifiedAt>
+    <LastModifiedBy>defaultUser</LastModifiedBy>
+    <ManifestVersion>SHA-512:f6a009030692ba06a12bc5b42dcbe8484d761f9f8b49f18c6c85cfbe6ef4c6d8db6ff9efdf9a1aea3460cedfca2726d0363c8ddf00c968d3fdc40c91e4201615</ManifestVersion>
+    <Policies>
+        <Policy>JS-SetLogValues</Policy>
+        <Policy>KV-GetLogParameters</Policy>
+    </Policies>
+    <Resources>
+        <Resource>jsc://JS-SetLogValues.js</Resource>
+    </Resources>
+    <Spec></Spec>
+    <subType>SharedFlow</subType>
+    <SharedFlows>
+        <SharedFlow>default</SharedFlow>
+    </SharedFlows>
+</SharedFlowBundle>

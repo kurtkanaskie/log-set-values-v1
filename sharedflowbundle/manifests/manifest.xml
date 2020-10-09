@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Manifest name="manifest">
+    <Policies>
+        <VersionInfo resourceName="JS-SetLogValues" version="SHA-512:a8c4d54dc97590c0943cfd9fed190c4d5ffdfc59f9467b63270dd1544d46b830560afee8b40f1edc6736d6f5804be9d27929e44fccdb8d3a19440431d4bd25a2"/>
+        <VersionInfo resourceName="KV-GetLogParameters" version="SHA-512:41f655586c7f0e686c003520f874392eb9869f1a242cc7dd992a01f20c0a788ef3e2870e99b23a7ccd80295d177f09aef5a7c774b4954a2b517b1e3e425b3814"/>
+    </Policies>
+    <ProxyEndpoints/>
+    <Resources>
+        <VersionInfo resourceName="jsc://JS-SetLogValues.js" version="SHA-512:1f1274451dbdbafa93552e41459361c1f9c2c6adec68422dc59a7d9d3bb4223fa9749713247f88a4426a2b87d299ef7ef2978d9fab57d75d757bfd2a00008b62"/>
+    </Resources>
+    <SharedFlows>
+        <VersionInfo resourceName="default" version="SHA-512:7a5cedc9897ae10cb8236e7ec46ff3137878b9d3c8d9b02de1ebaace7ef036e0a1f4f24ffa92d3d25c12ab6864dc961a293edb8e28e936ac0c3ddd88ab7901ef"/>
+    </SharedFlows>
+    <TargetEndpoints/>
+</Manifest>
