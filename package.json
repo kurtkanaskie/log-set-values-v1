@@ -1,0 +1,35 @@
+{
+  "name": "log-set-values-v1",
+  "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com:kurtkanaskie/pingstatus-v1.git"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "scripts": {
+    "apigeelint": "node ./node_modules/apigeelint/cli.js -s ./sharedflowbundle --profile apigeex -f table"
+  },
+  "devDependencies": {
+    "apickli": "^3.0.0",
+    "apigeelint": "^2.x",
+    "chai": "^4.3.4",
+    "chai-fuzzy": "^1.6.1",
+    "cucumber": "^1.0.0",
+    "mocha": "^9.1.3",
+    "sinon": "^12.0.1"
+  },
+  "jshintConfig": {
+    "predef": [
+      "console",
+      "context"
+    ],
+    "curly": true,
+    "eqeqeq": true,
+    "forin": true,
+    "undef": true,
+    "latedef": true,
+    "noempty": true,
+    "nonew": true,
+    "unused": true
+  }
+}

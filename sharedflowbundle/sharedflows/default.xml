@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <SharedFlow name="default">
-    <Step>
-        <Condition>currentstep.flowstate = "PROXY_REQ_FLOW"</Condition>
-        <Name>KV-GetLogParameters</Name>
-    </Step>
-    <Step>
-        <Name>JS-SetLogValues</Name>
-    </Step>
+  <Step>
+    <Condition>currentstep.flowstate = "PROXY_REQ_FLOW"</Condition>
+    <Name>KV-log-config</Name>
+  </Step>
+  <Step>
+    <Name>JS-set-log-values</Name>
+  </Step>
 </SharedFlow>

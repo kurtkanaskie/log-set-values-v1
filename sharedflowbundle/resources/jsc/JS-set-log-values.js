@@ -1,12 +1,28 @@
 var flow = context.getVariable('currentstep.flowstate');
 var logging = context.getVariable('logging_log');
 var logging_level = context.getVariable('logging_level');
-var logging_url = context.getVariable('logging_url');
+var logging_mask_character = context.getVariable('logging_mask_character');
+var logging_mask_fields = context.getVariable('logging_mask_fields');
+var logging_host = context.getVariable('logging_host');
+var logging_path = context.getVariable('logging_path');
+var perproxy_logging_log = context.getVariable('perproxy_logging_log');
+var perproxy_logging_level = context.getVariable('perproxy_logging_level');
+var perproxy_logging_mask_character = context.getVariable('perproxy_logging_mask_character');
+var perproxy_logging_mask_fields = context.getVariable('perproxy_logging_mask_fields');
+
+
+// Output: "logging_message" for use in other shared flows that use a logging policy (MessageLogging, ServiceCallout)
+// in a PostClientFlow in a specific proxy.
+
 // print( "logging " + logging);
 // print( "logging_level " + logging_level);
-// print( "logging_url " + logging_url);
+// print( "logging_mask_character " + logging_mask_character);
+// print( "logging_host " + logging_host);
+// print( "logging_path " + logging_path);
+// print( "perproxy_logging_log " + perproxy_logging_log);
+// print( "perproxy_logging_level " + perproxy_logging_level);
 
-// Ugh, this doesnt work within a nested Shared Flow, returns SHARED_FLOW, but can set via parameter
+// To work within a nested Shared Flow, set currentstep.flowstate via parameter returns SHARED_FLOW otherwise
 /*
 For example in a post-proxy Shared Flow with multiple Flow Callouts use:
     <FlowCallout async="false" continueOnError="false" enabled="true" name="FC-GetLogValues">
@@ -27,7 +43,6 @@ var isError = (context.getVariable( 'error' ) !== null );
 // print( "ERROR: " + isError);
 if( isError ) {
     context.setVariable("logging_level","ERROR");
-    // Now lets see if error.state is set.
     flow = "ERROR";
     // print( "workaround error flow " + flow);
 } else if ( flow === "RESP_SENT" ) {
@@ -103,42 +118,38 @@ if( logging == "true" ) {
                     context.setVariable( 'logging_target_response_reason_phrase', context.getVariable("message.reason.phrase"));
                     context.setVariable( 'logging_target_response_headers', getMessageHeaders());
                     context.setVariable( 'logging_target_response_content', getMessageContent());
-            } else { // Its in Proxy DefaultFaultRule
-                    // print( "ERROR PROXY " + error_state + " " + faultrule_name);
-                    context.setVariable( 'logging_response_status_code', context.getVariable("message.status.code"));
-                    context.setVariable( 'logging_response_reason_phrase', context.getVariable("message.reason.phrase"));
-                    context.setVariable( 'logging_response_headers', getMessageHeaders());
-                    context.setVariable( 'logging_response_content', getMessageContent());
-            }
+            } 
+            // Still need to set logging_response
+            // print( "ERROR PROXY " + error_state + " " + faultrule_name);
+            context.setVariable( 'logging_response_status_code', context.getVariable("message.status.code"));
+            context.setVariable( 'logging_response_reason_phrase', context.getVariable("message.reason.phrase"));
+            context.setVariable( 'logging_response_headers', getMessageHeaders());
+            context.setVariable( 'logging_response_content', getMessageContent());
             break;
         default:
-            print( "FLOW uncaught flowstate: " + flow );
+            // print( "FLOW uncaught flowstate: " + flow );
     }
     
-    // Build the message for use by FC-LogViaJavascript, FC-LogViaSyslog or EC-Stackdriver
+    // Build the logging_message for use in logging Shared Flows
     // If happy response then PROXY_RESP_FLOW
     // If error response then ERROR
     // If used in FlowHook, then RESP_SENT for both
-    if( flow === 'PROXY_RESP_FLOW' || flow == 'PROXY_POST_RESP_SENT' || flow === 'ERROR' ) {
+    if( flow === 'PROXY_RESP_FLOW' || flow === 'PROXY_POST_RESP_SENT' || flow === 'ERROR' ) {
         var request_start_time = context.getVariable('client.received.start.timestamp');
         var target_start_time  = context.getVariable('target.sent.start.timestamp');
         var target_end_time    = context.getVariable('target.received.end.timestamp');
         if( flow == 'PROXY_POST_RESP_SENT' ) {
+            // client.sent.end.timestamp is only available in PostClientFlow
             var request_end_time   = context.getVariable('client.sent.end.timestamp');
         } else {
             var request_end_time   = context.getVariable('system.timestamp');
         }
-        var total_request_time = request_end_time-request_start_time;
+        var total_time = request_end_time-request_start_time;
         var total_target_time  = target_end_time-target_start_time;
-        var total_client_time  = total_request_time-total_target_time;
+        var total_client_time  = total_time-total_target_time;
     
-        // Should get from flow variable
-        if( context.getVariable( 'error' ) !== null ) {
-            logging_level = "ERROR";
-        }
         var logObject = {
             "logLevel" : logging_level,
-            "name": context.getVariable("messageid"),
             "messageId": context.getVariable("messageid"),
             "messageProcessorId": context.getVariable('system.uuid'),
             "organization": context.getVariable("organization.name"),
@@ -146,14 +157,17 @@ if( logging == "true" ) {
             "appName": context.getVariable("developer.app.name"),
             "apiProduct": context.getVariable("apiproduct.name"),
             "proxyName": context.getVariable("apiproxy.name"),
+            "receivedTimestamp":request_start_time,
+            "sentTimestamp":request_end_time,
             "receivedTimestamp":new Date(request_start_time).toISOString(),
             "sentTimestamp":new Date(request_end_time).toISOString(),
             "clientLatency": total_client_time,
             "targetLatency": total_target_time,
-            "totalLatency": total_request_time,
+            "totalLatency": total_time,
             "proxyRequest": { 
                 "method": context.getVariable('logging_request_method'),
-                "url": context.getVariable('logging_request_url')
+                "url": context.getVariable('logging_request_url'),
+                "oasRequestFlow": context.getVariable("oas_request_flow")
             },
             "targetRequest": { 
                 "method": context.getVariable('logging_target_request_method'),
@@ -166,17 +180,18 @@ if( logging == "true" ) {
             "proxyResponse": { 
                 "status": context.getVariable("logging_response_status_code"),
                 "reason": context.getVariable("logging_response_reason_phrase")
-                // "status": context.getVariable("message.status.code"),
-                // "reason": context.getVariable("message.reason.phrase")
             }
         };
         
+        // Log the content of the requests and responses if DEBUG or ERROR
+        // If not JSON stringify into contentAsText
         if( logging_level == "DEBUG" || logging_level == "ERROR") {
             logObject.proxyRequest.headers = context.getVariable('logging_request_headers');
             var reqContent = context.getVariable('logging_request_content');
-            // print( "CONTENT TYPE: " + context.getVariable('message.header.content-type'));
+            print( "CONTENT TYPE: " + context.getVariable('message.header.content-type'));
             if( reqContent !== "" && reqContent !== undefined && reqContent !== null ) {
                 // OK if( context.proxyRequest.headers['Content-Type'] != 'application/json') {
+                // Hack to test for JSON
                 if( reqContent[0] != '{' ) {
                     reqContent = '{"contentAsText":' + JSON.stringify(reqContent) + '}';
                 }
@@ -186,6 +201,7 @@ if( logging == "true" ) {
             logObject.targetRequest.headers = context.getVariable('logging_target_request_headers');
             var reqContent = context.getVariable('logging_target_request_content');
             if( reqContent !== "" && reqContent !== undefined && reqContent !== null ) {
+                // Hack to test for JSON
                 if( reqContent[0] != '{' ) {
                     reqContent = '{"contentAsText":' + JSON.stringify(reqContent) + '}';
                 }
@@ -196,6 +212,7 @@ if( logging == "true" ) {
             var respContent = context.getVariable('logging_target_response_content');
             if( respContent !== "" && respContent !== undefined && respContent !== null ) {
                 // OK if( context.proxyResponse.headers['Content-Type'] != 'application/json') {
+                // Hack to test for JSON
                 if( respContent[0] != '{' ) {
                     respContent = '{"contentAsText":' + JSON.stringify(respContent) + '}';
                 }
@@ -207,9 +224,9 @@ if( logging == "true" ) {
             // logObject.proxyResponse.headers = getMessageHeaders();
             // var respContent = context.getVariable('message.content');
             if( respContent !== "" && respContent !== undefined && respContent !== null ) {
+                // Hack to test for JSON
                 if( respContent[0] != '{' ) {
                     respContent = '{"text":' + JSON.stringify(respContent) + '}';
-                    // print( "CONT: " + respContent);
                 }
                 logObject.proxyResponse.content = JSON.parse(respContent);
             }
@@ -221,6 +238,9 @@ if( logging == "true" ) {
         
         // print('LOGGING OBJECT ' + JSON.stringify(logObject));
         context.setVariable( 'logging_message', JSON.stringify(logObject) );
+        context.setVariable('response.header.x-latency-total', total_time);
+        context.setVariable('response.header.x-latency-proxy', total_client_time);
+        context.setVariable('response.header.x-latency-target', total_target_time);
     }
 }
 
@@ -242,29 +262,21 @@ function getMessageHeaders() {
 function getMessageContent() {
     var contentString = context.getVariable('message.content');
     // Parse and mask
-    /*
-    if( contentString === "" ) { print( 'CONTENT ""' + contentString); }
-    if( contentString === undefined ) { print( 'CONTENT undefined' + contentString); }
-    if( contentString === null ) { print( 'CONTENT null' + contentString); }
-    print( "CONTENT " + contentString);
-    print( 'CONTENT[0] "' + contentString[0] + '"');
-    */
-    contentString = contentString !== "" ? contentString.trim() : contentString;
-    if( contentString[0] === '{') {
-    // if( contentString !== "" && contentString !== undefined && contentString !== null ) {
-        var content = JSON.parse( contentString );
-        var maskChar = context.getVariable( "logging_mask_character");
-        maskChar = maskChar ? maskChar : '*';
-        var apiproxyName = context.getVariable( "apiproxy.name");
-        var pathsuffix = context.getVariable( "proxy.pathsuffix");
+    if( contentString ) {
+        try {
+            var content = JSON.parse( contentString );
+            logging_mask_character = logging_mask_character ? logging_mask_character : '*';
+            print( 'logging_mask_character ' + logging_mask_character );
 
-        // Simple example, the proxy is a notarget, but still need to check if full request and response is being logged, via DEBUG or ERROR
-        // if( apiproxyName === "features-v1" && pathsuffix === "/mask-request-response") {
-        if( apiproxyName === "features-v1" ) {
-            if( content.personal && content.personal.SSN ) {
-                content.personal.SSN = content.personal.SSN.replace(/./g,maskChar);
+            // Per proxy logging and masking
+            print( 'perproxy_logging_log ' + perproxy_logging_log + ' perproxy_logging_mask_character ' + perproxy_logging_mask_character);
+            if( perproxy_logging_log === 'true' ) {
+              perproxy_logging_mask_character = perproxy_logging_mask_character ? perproxy_logging_mask_character : '#';
             }
+
             return JSON.stringify( content );
+        } catch(e) {
+            print( "ERROR: " + e);
         }
     }
     return contentString;

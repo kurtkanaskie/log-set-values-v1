@@ -3,16 +3,16 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>apigee</groupId>
-	<artifactId>set-logging-values-v1</artifactId>
+	<artifactId>log-set-values-v1</artifactId>
 	<version>-</version>
-	<name>set-logging-values-v1</name>
+	<name>log-set-values-v1</name>
 	<packaging>pom</packaging>
 
 	<pluginRepositories>
 		<pluginRepository>
 			<id>central</id>
 			<name>Maven Plugin Repository</name>
-			<url>https://repo1.maven.org/maven2</url>
+			<url>https://repo.maven.apache.org/maven2</url>
 			<layout>default</layout>
 			<snapshots>
 				<enabled>false</enabled>
@@ -29,9 +29,8 @@
 		<org.slf4j.simpleLogger.defaultLogLevel>info</org.slf4j.simpleLogger.defaultLogLevel>
 		<project.root.dir>${basedir}</project.root.dir>
 		<target.root.dir>${basedir}/target</target.root.dir>
-		<commit>Manually</commit>
+		<commit>none</commit>
 		<branch>local</branch>
-		<buildName>name</buildName>
 	</properties>
 
 	<!-- This is where you add environment specific properties under various profile names 
@@ -49,18 +48,22 @@
 			-->
 			<properties>
 				<apigee.profile>test</apigee.profile>
-				<apigee.env>${EdgeEnv}</apigee.env>
-				<apigee.hosturl>https://api.enterprise.apigee.com</apigee.hosturl>
+				<apigee.hosturl>https://apigee.googleapis.com</apigee.hosturl>
 				<apigee.apiversion>v1</apigee.apiversion>
 				<apigee.apitype>sharedflow</apigee.apitype>
-				<apigee.org>${EdgeOrg}</apigee.org>
-				<apigee.username>${EdgeUsername}</apigee.username>
-				<apigee.password>${EdgePassword}</apigee.password>
-				<apigee.authtype>oauth</apigee.authtype>
-				<apigee.bearer>${EdgeBearer}</apigee.bearer>
-				<api.northbound.domain>${EdgeNorthboundDomain}</api.northbound.domain>
-				<api.testtag>@errorHandling,@health,@cors,@wip</api.testtag>
-				<!--<apigee.options>validate</apigee.options>-->
+				<apigee.options>override</apigee.options>
+				<apigee.config.dir>target/resources/edge</apigee.config.dir>
+				<apigee.config.exportDir>target/test/integration</apigee.config.exportDir>
+				<apigee.config.options>update</apigee.config.options>
+				<apigee.app.ignoreAPIProducts>true</apigee.app.ignoreAPIProducts>
+				<!-- -->
+				<!-- Override on command line or replace with your values -->
+				<apigee.org>apigeex-mint-kurt</apigee.org>
+				<apigee.env>test</apigee.env>
+				<apigee.username>cicd-test-service-account@apigeex-mint-kurt.iam.gserviceaccount.com</apigee.username>
+				<apigee.serviceaccount.file>/Users/kurtkanaskie/work/APIGEEX/SAs/apigeex-mint-kurt-cicd-test-service-account.json</apigee.serviceaccount.file>
+				<api.northbound.domain>xapi-test.kurtkanaskie.net</api.northbound.domain>
+				<api.testtag>@cors,@health,@errorHandling,@wip</api.testtag>
 			</properties>
 		</profile>
 		<profile>
@@ -78,12 +81,12 @@
 				<apigee.hosturl>https://api.enterprise.apigee.com</apigee.hosturl>
 				<apigee.apiversion>v1</apigee.apiversion>
 				<apigee.apitype>sharedflow</apigee.apitype>
+				<apigee.options>override</apigee.options>
+				<apigee.config.dir>target/resources/edge</apigee.config.dir>
 				<apigee.org>${EdgeOrg}</apigee.org>
-				<apigee.username>${EdgeUsername}</apigee.username>
-				<apigee.password>${EdgePassword}</apigee.password>
-				<apigee.authtype>oauth</apigee.authtype>
-				<apigee.bearer>${EdgeBearer}</apigee.bearer>
-				<api.northbound.domain>${EdgeNorthboundDomain}</api.northbound.domain>
+				<apigee.username>cicd-prod-service-account@apigeex-mint-kurt.iam.gserviceaccount.com</apigee.username>
+				<apigee.serviceaccount.file>/Users/kurtkanaskie/work/APIGEEX/SAs/apigeex-mint-kurt-cicd-prod-service-account.json</apigee.serviceaccount.file>
+				<api.northbound.domain>xapi.kurtkanaskie.net</api.northbound.domain>
 				<api.testtag>@errorHandling,@health,@cors,@wip</api.testtag>
 				<apigee.options>validate</apigee.options>
 			</properties>
@@ -166,7 +169,7 @@
 				<configuration>
 					<basedir>${target.root.dir}</basedir>
 					<includes>
-						<include>sharedflowbundle/set-logging-values-v1.xml</include>
+						<include>sharedflowbundle/log-set-values-v1.xml</include>
 					</includes>
 					<replacements>
 						<replacement>
@@ -181,7 +184,7 @@
 			<plugin>
 				<groupId>io.apigee.build-tools.enterprise4g</groupId>
 				<artifactId>apigee-edge-maven-plugin</artifactId>
-				<version>1.2.1</version>
+				<version>2.3.0</version>
 				<executions>
 					<execution>
 						<id>configure-bundle-step</id>
@@ -202,11 +205,12 @@
 			</plugin>
 
 			<!-- apigee Configuration -->
-            <plugin>
-                <groupId>com.apigee.edge.config</groupId>
-                <artifactId>apigee-config-maven-plugin</artifactId>
-                <version>1.4.2</version>
-                <executions>
+			<plugin>
+				<groupId>com.apigee.edge.config</groupId>
+				<artifactId>apigee-config-maven-plugin</artifactId>
+				<version>2.3.0</version>
+				<!-- as Initial entries for now
+				<executions>
                     <execution>
                         <id>create-config-kvm</id>
                         <phase>verify</phase>                        
@@ -215,61 +219,72 @@
                         </goals>
                     </execution>
                 </executions>
+            	-->
             </plugin>   
 
-            <plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.3.2</version>
+            <!-- install node, npm install, run apigeelint, run unit, run integration -->
+			<plugin>
+				<groupId>com.github.eirslett</groupId>
+				<artifactId>frontend-maven-plugin</artifactId>
+				<version>1.8.0</version>
+				<!-- NOTE: put executable in targetnode, otherwise uses node and deploy plugin thinks its a node.js proxy -->
+				<configuration>
+					<installDirectory>targetnode</installDirectory>
+				</configuration>
 				<executions>
-					<!-- npm install -->
-					<!-- TODO with below
 					<execution>
-						<id>npm-install</id>
+						<id>install node and npm</id>
 						<phase>validate</phase>
 						<goals>
-							<goal>exec</goal>
+							<goal>install-node-and-npm</goal>
 						</goals>
 						<configuration>
-							<executable>npm</executable>
-							<commandlineArgs>
-								install
-							</commandlineArgs>
+							<nodeVersion>v12.16.2</nodeVersion>
 						</configuration>
 					</execution>
-					-->
-					<!-- run unit tests -->
-					<!-- TODO
+					<execution>
+						<id>npm install</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<configuration>
+							<arguments>install</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>apigeelint</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<configuration>
+							<arguments>run apigeelint</arguments>
+						</configuration>
+					</execution>
+					<!--
 					<execution>
 						<id>unit</id>
 						<phase>validate</phase>
 						<goals>
-							<goal>exec</goal>
+							<goal>npm</goal>
 						</goals>
 						<configuration>
-							<executable>node</executable>
-							<commandlineArgs>
-								./node_modules/mocha/bin/mocha test/unit
-							</commandlineArgs>
+							<arguments>run unit</arguments>
 						</configuration>
 					</execution>
-					-->
-					<!-- run integration tests -->
-					<!-- Done in test proxy.
 					<execution>
 						<id>integration</id>
 						<phase>install</phase>
 						<goals>
-							<goal>exec</goal>
+							<goal>npm</goal>
 						</goals>
 						<configuration>
-							<executable>node</executable>
-							<commandlineArgs>
-								./node_modules/cucumber/bin/cucumber.js target/test/integration/features - -tags ${api.testtag}
-							</commandlineArgs>
+							<skip>${skip.integration}</skip>
+							<arguments>run integration - - - -tags ${api.testtag}</arguments>
 						</configuration>
 					</execution>
-				-->
+					-->
 				</executions>
 			</plugin>
 
