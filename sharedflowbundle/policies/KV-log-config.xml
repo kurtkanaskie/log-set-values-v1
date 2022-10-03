@@ -12,7 +12,7 @@
       <Key>
         <Parameter>logging_level</Parameter>
       </Key>
-      <Value>INFO</Value>
+      <Value>DEBUG</Value>
     </Entry>
     <Entry>
       <Key>
@@ -36,7 +36,7 @@
       <Key>
         <Parameter>logging_mask_fields</Parameter>
       </Key>
-      <Value>ssn,credit_card_number</Value>
+      <Value>ssn,ccn,accountNumber</Value>
     </Entry>
     <!--
       Entries per proxy
@@ -51,7 +51,7 @@
     </Entry>
     <Entry>
       <Key>
-        <Parameter>pingstatus-v1</Parameter>
+        <Parameter>logging-test</Parameter>
       </Key>
       <Value>true</Value>
       <Value>DEBUG</Value>
@@ -59,10 +59,10 @@
     </Entry>
     <Entry>
       <Key>
-        <Parameter>pingstatus-v1</Parameter>
+        <Parameter>logging-test</Parameter>
         <Parameter>mask_fields</Parameter>
       </Key>
-      <Value>developer_phone,client_id</Value>
+      <Value>phone,client_id</Value>
     </Entry>
   </InitialEntries>
   <!--
@@ -83,7 +83,8 @@
       <Parameter>logging_mask_character</Parameter>
     </Key>
   </Get>
-  <Get assignTo="logging_mask_fields" index="1">
+  <!-- No index gets all values as comma separated list -->
+  <Get assignTo="logging_mask_fields">
     <Key>
       <Parameter>logging_mask_fields</Parameter>
     </Key>

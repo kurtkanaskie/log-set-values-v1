@@ -1,10 +1,12 @@
+/* globals print */
+/* globals context */
 var flow = context.getVariable('currentstep.flowstate');
-var logging = context.getVariable('logging_log');
+var logging_log = context.getVariable('logging_log');
 var logging_level = context.getVariable('logging_level');
 var logging_mask_character = context.getVariable('logging_mask_character');
 var logging_mask_fields = context.getVariable('logging_mask_fields');
-var logging_host = context.getVariable('logging_host');
-var logging_path = context.getVariable('logging_path');
+// var logging_host = context.getVariable('logging_host');
+// var logging_path = context.getVariable('logging_path');
 var perproxy_logging_log = context.getVariable('perproxy_logging_log');
 var perproxy_logging_level = context.getVariable('perproxy_logging_level');
 var perproxy_logging_mask_character = context.getVariable('perproxy_logging_mask_character');
@@ -42,6 +44,8 @@ var flow = String(context.getVariable("currentstep.flowstate"));
 var isError = (context.getVariable( 'error' ) !== null );
 // print( "ERROR: " + isError);
 if( isError ) {
+    // Set here for later and for other logging Flow Callouts
+    logging_level = "ERROR";
     context.setVariable("logging_level","ERROR");
     flow = "ERROR";
     // print( "workaround error flow " + flow);
@@ -51,7 +55,7 @@ if( isError ) {
 }
 
 // Flow hook locations
-if( logging == "true" ) {
+if( logging_log === "true" ) {
     switch (flow) {
         case 'PROXY_REQ_FLOW':
             // print( "PROXY_REQ_FLOW" );
@@ -138,7 +142,7 @@ if( logging == "true" ) {
         var request_start_time = context.getVariable('client.received.start.timestamp');
         var target_start_time  = context.getVariable('target.sent.start.timestamp');
         var target_end_time    = context.getVariable('target.received.end.timestamp');
-        if( flow == 'PROXY_POST_RESP_SENT' ) {
+        if( flow === 'PROXY_POST_RESP_SENT' ) {
             // client.sent.end.timestamp is only available in PostClientFlow
             var request_end_time   = context.getVariable('client.sent.end.timestamp');
         } else {
@@ -147,7 +151,6 @@ if( logging == "true" ) {
         var total_time = request_end_time-request_start_time;
         var total_target_time  = target_end_time-target_start_time;
         var total_client_time  = total_time-total_target_time;
-    
         var logObject = {
             "logLevel" : logging_level,
             "messageId": context.getVariable("messageid"),
@@ -159,8 +162,8 @@ if( logging == "true" ) {
             "proxyName": context.getVariable("apiproxy.name"),
             "receivedTimestamp":request_start_time,
             "sentTimestamp":request_end_time,
-            "receivedTimestamp":new Date(request_start_time).toISOString(),
-            "sentTimestamp":new Date(request_end_time).toISOString(),
+            "receivedTimestampISO":new Date(request_start_time).toISOString(),
+            "sentTimestampISO":new Date(request_end_time).toISOString(),
             "clientLatency": total_client_time,
             "targetLatency": total_target_time,
             "totalLatency": total_time,
@@ -185,59 +188,22 @@ if( logging == "true" ) {
         
         // Log the content of the requests and responses if DEBUG or ERROR
         // If not JSON stringify into contentAsText
-        if( logging_level == "DEBUG" || logging_level == "ERROR") {
+        if( logging_level === "DEBUG" || logging_level === "ERROR") {
             logObject.proxyRequest.headers = context.getVariable('logging_request_headers');
-            var reqContent = context.getVariable('logging_request_content');
-            print( "CONTENT TYPE: " + context.getVariable('message.header.content-type'));
-            if( reqContent !== "" && reqContent !== undefined && reqContent !== null ) {
-                // OK if( context.proxyRequest.headers['Content-Type'] != 'application/json') {
-                // Hack to test for JSON
-                if( reqContent[0] != '{' ) {
-                    reqContent = '{"contentAsText":' + JSON.stringify(reqContent) + '}';
-                }
-                logObject.proxyRequest.content = JSON.parse(reqContent);
-            }
+            logObject.proxyRequest.content = context.getVariable('logging_request_content');
             
             logObject.targetRequest.headers = context.getVariable('logging_target_request_headers');
-            var reqContent = context.getVariable('logging_target_request_content');
-            if( reqContent !== "" && reqContent !== undefined && reqContent !== null ) {
-                // Hack to test for JSON
-                if( reqContent[0] != '{' ) {
-                    reqContent = '{"contentAsText":' + JSON.stringify(reqContent) + '}';
-                }
-                logObject.targetRequest.content = JSON.parse(reqContent);
-            }
-            
+            logObject.targetRequest.content = context.getVariable('logging_target_request_content');
+                        
             logObject.targetResponse.headers = context.getVariable('logging_target_response_headers');
-            var respContent = context.getVariable('logging_target_response_content');
-            if( respContent !== "" && respContent !== undefined && respContent !== null ) {
-                // OK if( context.proxyResponse.headers['Content-Type'] != 'application/json') {
-                // Hack to test for JSON
-                if( respContent[0] != '{' ) {
-                    respContent = '{"contentAsText":' + JSON.stringify(respContent) + '}';
-                }
-                logObject.targetResponse.content = JSON.parse(respContent);
-            }
-            
+            logObject.targetResponse.content = context.getVariable('logging_target_response_content');
+                        
             logObject.proxyResponse.headers = context.getVariable('logging_response_headers');
-            var respContent = context.getVariable('logging_response_content');
-            // logObject.proxyResponse.headers = getMessageHeaders();
-            // var respContent = context.getVariable('message.content');
-            if( respContent !== "" && respContent !== undefined && respContent !== null ) {
-                // Hack to test for JSON
-                if( respContent[0] != '{' ) {
-                    respContent = '{"text":' + JSON.stringify(respContent) + '}';
-                }
-                logObject.proxyResponse.content = JSON.parse(respContent);
-            }
+            logObject.proxyResponse.content = context.getVariable('logging_response_content');
         }
     
-        var headers = {
-            'Content-Type': 'application/json'
-        };
-        
         // print('LOGGING OBJECT ' + JSON.stringify(logObject));
-        context.setVariable( 'logging_message', JSON.stringify(logObject) );
+        context.setVariable('logging_message', JSON.stringify(logObject) );
         context.setVariable('response.header.x-latency-total', total_time);
         context.setVariable('response.header.x-latency-proxy', total_client_time);
         context.setVariable('response.header.x-latency-target', total_target_time);
@@ -266,18 +232,36 @@ function getMessageContent() {
         try {
             var content = JSON.parse( contentString );
             logging_mask_character = logging_mask_character ? logging_mask_character : '*';
-            print( 'logging_mask_character ' + logging_mask_character );
+            print( 'plogging_log ' + logging_log + ' logging_mask_character ' + logging_mask_character + " " + logging_mask_fields);
 
-            // Per proxy logging and masking
-            print( 'perproxy_logging_log ' + perproxy_logging_log + ' perproxy_logging_mask_character ' + perproxy_logging_mask_character);
-            if( perproxy_logging_log === 'true' ) {
-              perproxy_logging_mask_character = perproxy_logging_mask_character ? perproxy_logging_mask_character : '#';
+            if( logging_mask_fields ) {
+                logging_mask_fields.split(',').forEach(function(f) {
+                    print( "mask " + f + " " + typeof content[f]);
+                    if( content.hasOwnProperty(f) && typeof content[f] === 'string') {
+                        content[f] = String(content[f]).replace(/./g,logging_mask_character);
+                    }
+                });
             }
 
+            // Per proxy logging and masking
+            print( 'perproxy_logging_log ' + perproxy_logging_log + ' perproxy_logging_mask_character ' + perproxy_logging_mask_character + " " + perproxy_logging_mask_fields);
+            if( perproxy_logging_log === 'true' ) {
+                perproxy_logging_mask_character = perproxy_logging_mask_character ? perproxy_logging_mask_character : '#';
+                if( perproxy_logging_mask_fields ) {
+                    perproxy_logging_mask_fields.split(',').forEach(function(f) {
+                        print( "per-proxy mask " + f + " " + typeof content[f]);
+                        if( content.hasOwnProperty(f) && typeof content[f] === 'string') {
+                            content[f] = String(content[f]).replace(/./g,perproxy_logging_mask_character);
+                        }
+                    });
+                }
+            }
             return JSON.stringify( content );
         } catch(e) {
             print( "ERROR: " + e);
+            var contentAsText = { "contentAsText": contentString };
+            return JSON.stringify(contentAsText);
         }
     }
-    return contentString;
 }
+
