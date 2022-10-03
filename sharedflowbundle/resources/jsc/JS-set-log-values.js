@@ -1,5 +1,6 @@
 /* globals print */
 /* globals context */
+/* jslint latedef:false */
 var flow = context.getVariable('currentstep.flowstate');
 var logging_log = context.getVariable('logging_log');
 var logging_level = context.getVariable('logging_level');
@@ -12,21 +13,14 @@ var perproxy_logging_level = context.getVariable('perproxy_logging_level');
 var perproxy_logging_mask_character = context.getVariable('perproxy_logging_mask_character');
 var perproxy_logging_mask_fields = context.getVariable('perproxy_logging_mask_fields');
 
+/* Outputs: 
+    logging_message - for use in other shared flows that use a logging policy (MessageLogging, ServiceCallout)
+    logging_level - INFO, DEBUG, ERROR
+    logging_log - true | false
+*/
 
-// Output: "logging_message" for use in other shared flows that use a logging policy (MessageLogging, ServiceCallout)
-// in a PostClientFlow in a specific proxy.
-
-// print( "logging " + logging);
-// print( "logging_level " + logging_level);
-// print( "logging_mask_character " + logging_mask_character);
-// print( "logging_host " + logging_host);
-// print( "logging_path " + logging_path);
-// print( "perproxy_logging_log " + perproxy_logging_log);
-// print( "perproxy_logging_level " + perproxy_logging_level);
-
-// To work within a nested Shared Flow, set currentstep.flowstate via parameter returns SHARED_FLOW otherwise
-/*
-For example in a post-proxy Shared Flow with multiple Flow Callouts use:
+/*  To work within a nested Shared Flow, set currentstep.flowstate via parameter returns SHARED_FLOW otherwise
+    For example in a post-proxy Shared Flow with multiple Flow Callouts use:
     <FlowCallout async="false" continueOnError="false" enabled="true" name="FC-GetLogValues">
         <DisplayName>FC-GetLogValues</DisplayName>
         <Parameters>
@@ -36,26 +30,47 @@ For example in a post-proxy Shared Flow with multiple Flow Callouts use:
         <SharedFlowBundle>GetLogValues</SharedFlowBundle>
     </FlowCallout>
 */
+
+/* Override general with perproxy values
+    Karnaugh map
+        logging_log per_proxy_logging
+           false       false     no logging
+           false       true         logging
+           false       undef     no logging
+           true        false     no logging
+           true        true         logging
+           true        undef        logging
+
+    <Condition>
+      ((logging_log == 'false') and (per_proxy_logging == 'true')) or 
+      ((logging_log == 'true') and (per_proxy_logging != 'false'))
+    </Condition>
+*/
+if( (logging_log === 'false' && perproxy_logging_log === 'true' ) || 
+    (logging_log === 'true'  && perproxy_logging_log !== 'false') ) {
+    logging_log = 'true';
+    context.setVariable("logging_log",logging_log);
+}
+if( perproxy_logging_level ) {
+    logging_level = perproxy_logging_level;
+    context.setVariable("logging_level",logging_level);
+}
+
 var flow = String(context.getVariable("currentstep.flowstate"));
-// print( "currentstep.flowstate " + flow);
-// print( "current.flow.name " + context.getVariable("current.flow.name"));
 
 // Work around FlowHook issue where its RESP_SENT for both happy and error flows
 var isError = (context.getVariable( 'error' ) !== null );
-// print( "ERROR: " + isError);
 if( isError ) {
     // Set here for later and for other logging Flow Callouts
     logging_level = "ERROR";
     context.setVariable("logging_level","ERROR");
     flow = "ERROR";
-    // print( "workaround error flow " + flow);
 } else if ( flow === "RESP_SENT" ) {
     flow = "PROXY_RESP_FLOW";
-    // print( "workaround resp_sent flow " + flow);
 }
 
 // Flow hook locations
-if( logging_log === "true" ) {
+if( logging_log === 'true' ) {
     switch (flow) {
         case 'PROXY_REQ_FLOW':
             // print( "PROXY_REQ_FLOW" );
@@ -137,17 +152,13 @@ if( logging_log === "true" ) {
     // Build the logging_message for use in logging Shared Flows
     // If happy response then PROXY_RESP_FLOW
     // If error response then ERROR
-    // If used in FlowHook, then RESP_SENT for both
+    // If used in FlowHook, then RESP_SENT for both - so workaround at top and use PROXY_RESP_FLOW
     if( flow === 'PROXY_RESP_FLOW' || flow === 'PROXY_POST_RESP_SENT' || flow === 'ERROR' ) {
         var request_start_time = context.getVariable('client.received.start.timestamp');
         var target_start_time  = context.getVariable('target.sent.start.timestamp');
         var target_end_time    = context.getVariable('target.received.end.timestamp');
-        if( flow === 'PROXY_POST_RESP_SENT' ) {
-            // client.sent.end.timestamp is only available in PostClientFlow
-            var request_end_time   = context.getVariable('client.sent.end.timestamp');
-        } else {
-            var request_end_time   = context.getVariable('system.timestamp');
-        }
+        // client.sent.end.timestamp is only available in PostClientFlow and this will not run there
+        var request_end_time   = context.getVariable('system.timestamp');
         var total_time = request_end_time-request_start_time;
         var total_target_time  = target_end_time-target_start_time;
         var total_client_time  = total_time-total_target_time;
@@ -188,7 +199,7 @@ if( logging_log === "true" ) {
         
         // Log the content of the requests and responses if DEBUG or ERROR
         // If not JSON stringify into contentAsText
-        if( logging_level === "DEBUG" || logging_level === "ERROR") {
+        if( logging_level === "DEBUG" || logging_level === "ERROR" ) {
             logObject.proxyRequest.headers = context.getVariable('logging_request_headers');
             logObject.proxyRequest.content = context.getVariable('logging_request_content');
             
@@ -231,30 +242,32 @@ function getMessageContent() {
     if( contentString ) {
         try {
             var content = JSON.parse( contentString );
+            // General logging and masking
             logging_mask_character = logging_mask_character ? logging_mask_character : '*';
-            print( 'plogging_log ' + logging_log + ' logging_mask_character ' + logging_mask_character + " " + logging_mask_fields);
-
             if( logging_mask_fields ) {
                 logging_mask_fields.split(',').forEach(function(f) {
                     print( "mask " + f + " " + typeof content[f]);
                     if( content.hasOwnProperty(f) && typeof content[f] === 'string') {
                         content[f] = String(content[f]).replace(/./g,logging_mask_character);
                     }
+                    if( content.hasOwnProperty(f) && typeof content[f] === 'number') {
+                        content[f] = Number(String(content[f]).replace(/./g,9));
+                    }
                 });
             }
 
             // Per proxy logging and masking
-            print( 'perproxy_logging_log ' + perproxy_logging_log + ' perproxy_logging_mask_character ' + perproxy_logging_mask_character + " " + perproxy_logging_mask_fields);
-            if( perproxy_logging_log === 'true' ) {
+            if( perproxy_logging_log === 'true' && perproxy_logging_mask_fields ) {
                 perproxy_logging_mask_character = perproxy_logging_mask_character ? perproxy_logging_mask_character : '#';
-                if( perproxy_logging_mask_fields ) {
-                    perproxy_logging_mask_fields.split(',').forEach(function(f) {
-                        print( "per-proxy mask " + f + " " + typeof content[f]);
-                        if( content.hasOwnProperty(f) && typeof content[f] === 'string') {
-                            content[f] = String(content[f]).replace(/./g,perproxy_logging_mask_character);
-                        }
-                    });
-                }
+                perproxy_logging_mask_fields.split(',').forEach(function(f) {
+                    print( "per-proxy mask " + f + " " + typeof content[f]);
+                    if( content.hasOwnProperty(f) && typeof content[f] === 'string') {
+                        content[f] = String(content[f]).replace(/./g,logging_mask_character);
+                    }
+                    if( content.hasOwnProperty(f) && typeof content[f] === 'number') {
+                        content[f] = Number(String(content[f]).replace(/./g,9));
+                    }
+                });
             }
             return JSON.stringify( content );
         } catch(e) {

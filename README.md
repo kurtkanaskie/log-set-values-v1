@@ -41,25 +41,22 @@ Then install using maven:
 * mvn -P test install
 
 ## Test
-- _ Set logging_log = false
-- _ Set logging_log = true
-- _ Set logging_level = INFO, DEBUG, ERROR
+- X Set logging_log = false
+- X Set logging_log = true
+- X Set logging_level = INFO, DEBUG, ERROR
 - X Call 200, 400
 - X Call 200 with non JSON target
 - X Call with non-json request
 - X Call with formparam
 - X Create test proxy (logging-test) with sensitive response to check masking in logging-mock and logging
-
-
-WIP:
 * X testing non-json responses with proper error handling, no hacks!
   * X XML 
   * X Invalid json input - this throws a JS fault in the backend - OK
 * interaction between logging in general and per-proxy logging - ensure per-proxy overrides general
-	* _ per-proxy DEBUG and general is INFO.
-	* _ general is true per-proxy false
-  * _ per-proxy true general false
+  * X general is true per-proxy false
+	* X per-proxy DEBUG and general is INFO, sends debug payload but INFO level
+  * X per-proxy true general false
 * masking
   * X only works at first level - make work for nexted objects via json path
-  * _ for numbers
+  * X for numbers
 
