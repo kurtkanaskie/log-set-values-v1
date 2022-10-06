@@ -59,4 +59,6 @@ Then install using maven:
 * masking
   * X only works at first level - make work for nexted objects via json path
   * X for numbers
+* bug
+  * perproxy_logging_level sets logging_level when perproxy_logging_log is false, that's OK. perproxy values override general values.
 

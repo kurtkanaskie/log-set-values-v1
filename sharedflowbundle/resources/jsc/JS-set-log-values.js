@@ -31,30 +31,21 @@ var perproxy_logging_mask_fields = context.getVariable('perproxy_logging_mask_fi
     </FlowCallout>
 */
 
-/* Override general with perproxy values
+/* Override general with perproxy values, except for mask characters and mask fields
     Karnaugh map
-        logging_log per_proxy_logging
-           false       false     no logging
-           false       true         logging
-           false       undef     no logging
-           true        false     no logging
-           true        true         logging
-           true        undef        logging
-
-    <Condition>
-      ((logging_log == 'false') and (per_proxy_logging == 'true')) or 
-      ((logging_log == 'true') and (per_proxy_logging != 'false'))
-    </Condition>
+        logging_log logging_level perproxy_logging_log perproxy_logging_level   logging_log     logging_level
+            true        GLEV        not set             not set                 true                GLEV
+            true        GLEV        true                plev                    true                plev
+            true        GLEV        false               plev                    false               plev (doesn't matter)
+            false       GLEV        not set             not set                 false               GLEV (doesn't matter)
+            false       GLEV        true                plev                    true                plev
+            false       GLEV        false               plev                    false               plev (doesn't matter)
 */
-if( (logging_log === 'false' && perproxy_logging_log === 'true' ) || 
-    (logging_log === 'true'  && perproxy_logging_log !== 'false') ) {
-    logging_log = 'true';
-    context.setVariable("logging_log",logging_log);
-}
-if( perproxy_logging_level ) {
-    logging_level = perproxy_logging_level;
-    context.setVariable("logging_level",logging_level);
-}
+print( "INCOMING: " + logging_log + "-" + logging_level + "-" + perproxy_logging_log + "-" + perproxy_logging_level + "\n");
+logging_log = perproxy_logging_log ? perproxy_logging_log : logging_log;
+logging_level = perproxy_logging_level ? perproxy_logging_level : logging_level;
+print( "RESULT: " + logging_log + "-" + logging_level + "-" + perproxy_logging_log + "-" + perproxy_logging_level + "\n");
+
 
 var flow = String(context.getVariable("currentstep.flowstate"));
 
@@ -63,11 +54,12 @@ var isError = (context.getVariable( 'error' ) !== null );
 if( isError ) {
     // Set here for later and for other logging Flow Callouts
     logging_level = "ERROR";
-    context.setVariable("logging_level","ERROR");
     flow = "ERROR";
 } else if ( flow === "RESP_SENT" ) {
     flow = "PROXY_RESP_FLOW";
 }
+context.setVariable("logging_log",logging_log);
+context.setVariable("logging_level",logging_level);
 
 // Flow hook locations
 if( logging_log === 'true' ) {
