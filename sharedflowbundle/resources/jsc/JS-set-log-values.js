@@ -41,10 +41,10 @@ var perproxy_logging_mask_fields = context.getVariable('perproxy_logging_mask_fi
             false       GLEV        true                plev                    true                plev
             false       GLEV        false               plev                    false               plev (doesn't matter)
 */
-print( "INCOMING: " + logging_log + "-" + logging_level + "-" + perproxy_logging_log + "-" + perproxy_logging_level + "\n");
+// print( "INCOMING: " + logging_log + "-" + logging_level + "-" + perproxy_logging_log + "-" + perproxy_logging_level + "\n");
 logging_log = perproxy_logging_log ? perproxy_logging_log : logging_log;
 logging_level = perproxy_logging_level ? perproxy_logging_level : logging_level;
-print( "RESULT: " + logging_log + "-" + logging_level + "-" + perproxy_logging_log + "-" + perproxy_logging_level + "\n");
+// print( "RESULT: " + logging_log + "-" + logging_level + "-" + perproxy_logging_log + "-" + perproxy_logging_level + "\n");
 
 
 var flow = String(context.getVariable("currentstep.flowstate"));
@@ -238,7 +238,7 @@ function getMessageContent() {
             logging_mask_character = logging_mask_character ? logging_mask_character : '*';
             if( logging_mask_fields ) {
                 logging_mask_fields.split(',').forEach(function(f) {
-                    print( "mask " + f + " " + typeof content[f]);
+                    // print( "mask " + f + " " + typeof content[f]);
                     if( content.hasOwnProperty(f) && typeof content[f] === 'string') {
                         content[f] = String(content[f]).replace(/./g,logging_mask_character);
                     }
@@ -252,7 +252,7 @@ function getMessageContent() {
             if( perproxy_logging_log === 'true' && perproxy_logging_mask_fields ) {
                 perproxy_logging_mask_character = perproxy_logging_mask_character ? perproxy_logging_mask_character : '#';
                 perproxy_logging_mask_fields.split(',').forEach(function(f) {
-                    print( "per-proxy mask " + f + " " + typeof content[f]);
+                    // print( "per-proxy mask " + f + " " + typeof content[f]);
                     if( content.hasOwnProperty(f) && typeof content[f] === 'string') {
                         content[f] = String(content[f]).replace(/./g,logging_mask_character);
                     }
@@ -263,7 +263,7 @@ function getMessageContent() {
             }
             return JSON.stringify( content );
         } catch(e) {
-            print( "ERROR: " + e);
+            // print( "ERROR: " + e);
             var contentAsText = { "contentAsText": contentString };
             return JSON.stringify(contentAsText);
         }
