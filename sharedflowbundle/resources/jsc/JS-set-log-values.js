@@ -32,8 +32,8 @@ var perproxy_logging_mask_fields = context.getVariable('perproxy_logging_mask_fi
 */
 
 /* Override general with perproxy values, except for mask characters and mask fields
-    Karnaugh map
-        logging_log logging_level perproxy_logging_log perproxy_logging_level   logging_log     logging_level
+    Karnaugh map GLEV = global, plev = per proxy
+        logging_log logging_level perproxy_logging_log perproxy_logging_level = logging_log     logging_level
             true        GLEV        not set             not set                 true                GLEV
             true        GLEV        true                plev                    true                plev
             true        GLEV        false               plev                    false               plev (doesn't matter)
@@ -76,6 +76,7 @@ if( logging_log === 'true' ) {
             context.setVariable( 'logging_request_url', req_url);
             context.setVariable( 'logging_request_headers', getMessageHeaders());
             context.setVariable( 'logging_request_content', getMessageContent());
+            context.setVariable( 'logging_request_trace_context',context.getVariable('request.header.X-Cloud-Trace-Context'));
             break;
     
         case 'TARGET_REQ_FLOW':
@@ -96,6 +97,7 @@ if( logging_log === 'true' ) {
             context.setVariable( 'logging_target_response_reason_phrase', context.getVariable("message.reason.phrase"));
             context.setVariable( 'logging_target_response_headers', getMessageHeaders());
             context.setVariable( 'logging_target_response_content', getMessageContent());
+            // print( "TARGET_RESP_FLOW JSON LENGTH: " + context.getVariable('message.header.content-length'));
             break;
             
         case 'PROXY_RESP_FLOW':
@@ -105,6 +107,7 @@ if( logging_log === 'true' ) {
             context.setVariable( 'logging_response_reason_phrase', context.getVariable("message.reason.phrase"));
             context.setVariable( 'logging_response_headers', getMessageHeaders());
             context.setVariable( 'logging_response_content', getMessageContent());
+            // print( "PROXY_RESP_FLOW JSON LENGTH: " + context.getVariable('message.header.content-length'));
             break;
             
             
@@ -136,6 +139,7 @@ if( logging_log === 'true' ) {
             context.setVariable( 'logging_response_reason_phrase', context.getVariable("message.reason.phrase"));
             context.setVariable( 'logging_response_headers', getMessageHeaders());
             context.setVariable( 'logging_response_content', getMessageContent());
+            // print( "ERROR JSON LENGTH: " + context.getVariable('message.header.content-length'));
             break;
         default:
             // print( "FLOW uncaught flowstate: " + flow );
@@ -158,8 +162,10 @@ if( logging_log === 'true' ) {
             "logLevel" : logging_level,
             "messageId": context.getVariable("messageid"),
             "messageProcessorId": context.getVariable('system.uuid'),
+            "logging_request_trace_context":context.getVariable('logging_request_trace_context'),
             "organization": context.getVariable("organization.name"),
             "environment": context.getVariable("environment.name"),
+            "region": context.getVariable("system.region.name"),
             "appName": context.getVariable("developer.app.name"),
             "apiProduct": context.getVariable("apiproduct.name"),
             "proxyName": context.getVariable("apiproxy.name"),
@@ -190,7 +196,6 @@ if( logging_log === 'true' ) {
         };
         
         // Log the content of the requests and responses if DEBUG or ERROR
-        // If not JSON stringify into contentAsText
         if( logging_level === "DEBUG" || logging_level === "ERROR" ) {
             logObject.proxyRequest.headers = context.getVariable('logging_request_headers');
             logObject.proxyRequest.content = context.getVariable('logging_request_content');
@@ -205,7 +210,8 @@ if( logging_log === 'true' ) {
             logObject.proxyResponse.content = context.getVariable('logging_response_content');
         }
     
-        // print('LOGGING OBJECT ' + JSON.stringify(logObject));
+        var str = JSON.stringify(logObject);
+        print("SIZE: " + str.length + " MSG: " + str);
         context.setVariable('logging_message', JSON.stringify(logObject) );
         context.setVariable('response.header.x-latency-total', total_time);
         context.setVariable('response.header.x-latency-proxy', total_client_time);
@@ -232,13 +238,13 @@ function getMessageContent() {
     var contentString = context.getVariable('message.content');
     // Parse and mask
     if( contentString ) {
-        try {
+          try {
             var content = JSON.parse( contentString );
             // General logging and masking
             logging_mask_character = logging_mask_character ? logging_mask_character : '*';
             if( logging_mask_fields ) {
                 logging_mask_fields.split(',').forEach(function(f) {
-                    // print( "mask " + f + " " + typeof content[f]);
+                    // print( "logging mask " + f + " " + typeof content[f]);
                     if( content.hasOwnProperty(f) && typeof content[f] === 'string') {
                         content[f] = String(content[f]).replace(/./g,logging_mask_character);
                     }
@@ -261,11 +267,12 @@ function getMessageContent() {
                     }
                 });
             }
-            return JSON.stringify( content );
+            return content;
         } catch(e) {
-            // print( "ERROR: " + e);
-            var contentAsText = { "contentAsText": contentString };
-            return JSON.stringify(contentAsText);
+            // If not JSON stringify into contentAsText
+            var contentText = {};
+            contentText.contentAsText = contentString;
+            return contentText;
         }
     }
 }

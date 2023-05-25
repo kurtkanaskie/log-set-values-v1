@@ -1,18 +1,17 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<SharedFlowBundle revision="40" name="log-set-values-v1">
-  <DisplayName>log-set-values-v1</DisplayName>
-  <Description>Now with masking per proxy. Can be used as FCs at each Flow Hook location, in Target and Proxy DefaultFaultRule. Used by log-cloud-logging-v1 SF and logging-test proxy.Expects "currentstep.flowstate" set by calling FC in Flow Hook Shared Flows (e.g. pre-proxy). Protects against non-json responses from targets. BUILD DETAILS: DESCRIPTION</Description>
-  <CreatedAt>1664485295249</CreatedAt>
-  <LastModifiedAt>1664485682543</LastModifiedAt>
-  <Policies>
-    <Policy>KV-log-config</Policy>
-    <Policy>JS-set-log-values</Policy>
-  </Policies>
-  <Resources>
-    <Resource>jsc://JS-set-log-values.js</Resource>
-  </Resources>
-  <SharedFlows>
-    <SharedFlow>default</SharedFlow>
-  </SharedFlows>
-  <subType>SharedFlow</subType>
+<SharedFlowBundle revision="79" name="log-set-values-v1">
+    <DisplayName>log-set-values-v1</DisplayName>
+    <Description>Now with masking per proxy. Can be used as FCs at each Flow Hook location, in Target and Proxy DefaultFaultRule. Used by log-cloud-logging-v1 SF and logging-test proxy.Expects &#34;currentstep.flowstate&#34; set by calling FC in Flow Hook Shared Flows (e.g. pre-proxy). Protects against non-json responses from targets. BUILD DETAILS: commit none from local branch by cicd-test-service-account@apigeex-mint-kurt.iam.gserviceaccount.com</Description>
+    <CreatedAt>1685041169044</CreatedAt>
+    <LastModifiedAt>1685041169044</LastModifiedAt>
+    <Policies>
+        <Policy>KV-log-config</Policy>
+        <Policy>JS-set-log-values</Policy>
+    </Policies>
+    <Resources>
+        <Resource>jsc://JS-set-log-values.js</Resource>
+    </Resources>
+    <SharedFlows>
+        <SharedFlow>default</SharedFlow>
+    </SharedFlows>
+    <subType>SharedFlow</subType>
 </SharedFlowBundle>

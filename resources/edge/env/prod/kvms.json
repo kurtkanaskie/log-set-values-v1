@@ -13,31 +13,31 @@
             },
             {
                 "name": "logging_mask_character",
-                "value": "x"
+                "value": "X"
             },
             {
                 "name": "logging_host",
-                "value": "kurtkanaskietrainer-trial-prod.apigee.net"
+                "value": "xapi-dev.kurtkanaskie.net"
             },
             {
                 "name": "logging_path",
                 "value": "logging-mock"
             },
             {
+                "name": "logging_mask_fields",
+                "value": "ssn,ccn"
+            },
+            {
+                "name": "apigee-api-facade-v1",
+                "value": "false,INFO,x"
+            },
+            {
                 "name": "pingstatus-v1",
-                "value": "true,DEBUG,https://kurtkanaskietrainer-trial-prod.apigee.net/logging-mock"
-            }
-            {
-                "name": "logging_url",
-                "value": "https://kurtkanaskietrainer-trial-prod.apigee.net/logging-mock"
+                "value": "true,INFO,x"
             },
             {
-                "name": "features-v1",
-                "value": "true,DEBUG,https://kurtkanaskietrainer-trial-prod.apigee.net/logging-mock"
-            },
-            {
-                "name": "pingstatus-v1-sharedflows",
-                "value": "true,DEBUG,https://kurtkanaskietrainer-trial-prod.apigee.net/logging-mock"
+                "name": "pingstatus-v1__mask_fields",
+                "value": "developer_phone,client_id"
             }
         ]
     }
