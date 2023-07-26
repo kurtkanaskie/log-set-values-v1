@@ -226,8 +226,9 @@ function getMessageHeaders() {
     var headerNamesArr = headerNames.toArray();
     var headersObj = {};
     for (var i=0; i < headerNamesArr.length; i++) {
-        // print("HEADER: " + headerNamesArr[i] + ":" + context.getVariable('message.header.'+headerNamesArr[i].toLowerCase())); 
-        headersObj[headerNamesArr[i]] = context.getVariable('message.header.' + headerNamesArr[i]);
+            var headerString = 'message.header.'+ headerNamesArr[i].toLowerCase() + '.values.string';
+            // print("HEADER: " + headerNamesArr[i] + ":" + context.getVariable(headerString)); 
+            headersObj[headerNamesArr[i]] = context.getVariable(headerString);
     }
     return headersObj;
 }
