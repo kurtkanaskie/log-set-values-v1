@@ -1,17 +1,31 @@
 # log-set-values-v1
 Apigee X Shared Flow to capture logging information at each of the flow hook locations.
-Doesn't actuall log message, intended to be use with Shared Flows that log to various destinations (e.g. logging-mock proxy, Cloud Logging (via Service Callout or Message Logging).
+Doesn't actually log message, intended to be use with a Shared Flow that logs to various destinations (e.g. logging-mock proxy, Cloud Logging (via Service Callout or Message Logging).
 
-Now with masking for all and masking per proxy. 
-Can be used as Shared Flow at each Flow Hook location.
-Can be used discretely in Target and Proxy DefaultFaultRule. 
+Features:
+* Uses a single Shared Flow with a JavaScript policy to capture request and response information. 
+* Can be used as Shared Flow at each Flow Hook location, either in the proxy or via Flow Hooks.
+* Can be used discretely in a proxy in each flow hook location and in Target and Proxy DefaultFaultRules. 
+* Configurable via KVM for logging in general and loggingh levels
+** INFO
+** DEBUB
+** ERROR
+* Supports field level masking for all proxies or for specific proxies via KVM values. 
+* Handles non-json responses from targets.
 
+Requires "currentstep.flowstate" to be passed as a parameter in the Flow Callout when used in Flow Hook shared flows (pre-proxy, pre-target, post-target and post-proxy).
 
-Expects "currentstep.flowstate" to be set by calling Flow Callout in Flow Hook Shared Flows (e.g. pre-proxy).
-
-For example:
+For example in `pre-proxy-v1` Shared Flow for that Flow Hook:
 ```
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<SharedFlow name="default">
+    <Step>
+        <Name>FC-log-set-values-v1</Name>
+    </Step>
+    <!-- Other Shared Flow Flow Callouts -->
+</SharedFlow>
+```
+
+```
 <FlowCallout continueOnError="false" enabled="true" name="FC-log-set-values-v1">
   <DisplayName>FC-log-set-values-v1</DisplayName>
   <Parameters>
@@ -22,7 +36,6 @@ For example:
 </FlowCallout>
 ```
 
-Handles non-json responses from targets.
 
 ## Disclaimer
 
@@ -40,7 +53,7 @@ Update the profiles to reflect your org / env and credentials.
 Then install using maven:
 * mvn -P test install
 
-## Test
+## Test checklist
 - X Set logging_log = false
 - X Set logging_log = true
 - X Set logging_level = INFO, DEBUG, ERROR
