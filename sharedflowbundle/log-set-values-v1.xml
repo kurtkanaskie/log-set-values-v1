@@ -1,8 +1,8 @@
-<SharedFlowBundle revision="79" name="log-set-values-v1">
+<SharedFlowBundle revision="80" name="log-set-values-v1">
     <DisplayName>log-set-values-v1</DisplayName>
-    <Description>Now with masking per proxy. Can be used as FCs at each Flow Hook location, in Target and Proxy DefaultFaultRule. Used by log-cloud-logging-v1 SF and logging-test proxy.Expects &#34;currentstep.flowstate&#34; set by calling FC in Flow Hook Shared Flows (e.g. pre-proxy). Protects against non-json responses from targets. BUILD DETAILS: commit none from local branch by cicd-test-service-account@apigeex-mint-kurt.iam.gserviceaccount.com</Description>
-    <CreatedAt>1685041169044</CreatedAt>
-    <LastModifiedAt>1685041169044</LastModifiedAt>
+    <Description>Fix for headers to use &#34;values.string&#34; to get all values, not just the first. Now with masking per proxy. Can be used as FCs at each Flow Hook location, in Target and Proxy DefaultFaultRule. Used by log-cloud-logging-v1 SF and logging-test proxy.Expects &#34;currentstep.flowstate&#34; set by calling FC in Flow Hook Shared Flows (e.g. pre-proxy). Protects against non-json responses from targets. BUILD DETAILS: commit none from local branch by cicd-test-service-account@apigeex-mint-kurt.iam.gserviceaccount.com</Description>
+    <CreatedAt>1690401947089</CreatedAt>
+    <LastModifiedAt>1690403091230</LastModifiedAt>
     <Policies>
         <Policy>KV-log-config</Policy>
         <Policy>JS-set-log-values</Policy>
