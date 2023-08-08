@@ -7,9 +7,9 @@ Features:
 * Can be used as Shared Flow at each Flow Hook location, either in the proxy or via Flow Hooks.
 * Can be used discretely in a proxy in each flow hook location and in Target and Proxy DefaultFaultRules. 
 * Configurable via KVM for logging in general and loggingh levels
-** INFO
-** DEBUB
-** ERROR
+  * INFO - minimal information, proxy and target request URLs, response status and latencies
+  * DEBUG - full information including headers, request and response content
+  * ERROR - same as DEBUG but with logLevel set to ERROR
 * Supports field level masking for all proxies or for specific proxies via KVM values. 
 * Handles non-json responses from targets.
 
