@@ -1,6 +1,6 @@
 # log-set-values-v1
 Apigee X Shared Flow to capture logging information at each of the flow hook locations.
-It doesn't actually log the information, it builds a "logging_message" flow variable that is intended to be used with a Shared Flow that logs to various destinations (e.g. logging-mock proxy, Cloud Logging (via Service Callout or Message Logging).
+It doesn't actually log the information, it builds a "logging_message" flow variable that is intended to be used with a Shared Flow that logs to various destinations using a Service Callout or Message Logging policy.
 
 Features:
 * Uses a single Shared Flow with a JavaScript policy to capture request and response information. 
