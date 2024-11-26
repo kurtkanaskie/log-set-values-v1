@@ -223,6 +223,7 @@
             </plugin>   
 
             <!-- install node, npm install, run apigeelint, run unit, run integration -->
+			<!-- install node, npm install, run apigeelint, run unit, run integration -->
 			<plugin>
 				<groupId>com.github.eirslett</groupId>
 				<artifactId>frontend-maven-plugin</artifactId>
@@ -230,20 +231,19 @@
 				<!-- NOTE: put executable in targetnode, otherwise uses node and deploy plugin thinks its a node.js proxy -->
 				<configuration>
 					<installDirectory>targetnode</installDirectory>
+					<nodeVersion>v22.8.0</nodeVersion>
+					<npmVersion>10.8.3</npmVersion>
 				</configuration>
 				<executions>
 					<execution>
-						<id>install node and npm</id>
+						<id>install-node-and-npm</id>
 						<phase>validate</phase>
 						<goals>
 							<goal>install-node-and-npm</goal>
 						</goals>
-						<configuration>
-							<nodeVersion>v12.16.2</nodeVersion>
-						</configuration>
 					</execution>
 					<execution>
-						<id>npm install</id>
+						<id>npm-install</id>
 						<phase>validate</phase>
 						<goals>
 							<goal>npm</goal>
@@ -262,29 +262,6 @@
 							<arguments>run apigeelint</arguments>
 						</configuration>
 					</execution>
-					<!--
-					<execution>
-						<id>unit</id>
-						<phase>validate</phase>
-						<goals>
-							<goal>npm</goal>
-						</goals>
-						<configuration>
-							<arguments>run unit</arguments>
-						</configuration>
-					</execution>
-					<execution>
-						<id>integration</id>
-						<phase>install</phase>
-						<goals>
-							<goal>npm</goal>
-						</goals>
-						<configuration>
-							<skip>${skip.integration}</skip>
-							<arguments>run integration - - - -tags ${api.testtag}</arguments>
-						</configuration>
-					</execution>
-					-->
 				</executions>
 			</plugin>
 
